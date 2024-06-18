@@ -5,7 +5,8 @@
 #ifndef NETWORKFLOWSTF_SCHEDULER_H
 #define NETWORKFLOWSTF_SCHEDULER_H
 
-
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include "Task.h"
 
@@ -21,7 +22,7 @@ public:
 
     void addTask(Task task);
 
-    int getNFastCores() const;
+    [[maybe_unused]] int getNFastCores() const;
 
     int getNLowPowerCores() const;
 
@@ -39,8 +40,9 @@ private:
         makeSpan = -1;
     }
 
-    int backtrack(int index, std::vector<std::vector<Task>>& schedule, int current,
-                  std::string& tasksScheduled, int totalScheduledTasks);
+    int backtrack(int index, std::vector<std::vector<Task>> &schedule, int current,
+                  std::string &tasksScheduled, int totalScheduledTasks, std::string &coreAssigned,
+                  std::unordered_map<std::string, std::unordered_set<std::string>> &dp);
 
     void saveSchedule();
 };
