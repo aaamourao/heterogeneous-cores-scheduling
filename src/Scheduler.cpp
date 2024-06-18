@@ -86,7 +86,7 @@ void Scheduler::execute() {
 int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedule, const int current,
                          std::string& tasksScheduled, const int totalScheduledTasks,
                          std::unordered_set<std::string>& dp, const int beginning, const int end) {
-    if (totalScheduledTasks == beginning - end || current >= makeSpan) {
+    if (totalScheduledTasks == end - beginning || current >= makeSpan) {
         if (current < makeSpan) {
             makeSpan = current;
             bestSchedule = schedule;
