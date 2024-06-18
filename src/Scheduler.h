@@ -34,6 +34,8 @@ public:
 
     void saveSchedule();
 
+    void executeBatch(int start, int end);
+
 private:
     Scheduler() {
         nFastCores = 0;
@@ -44,6 +46,10 @@ private:
 
     int backtrack(int index, std::vector<std::vector<Task>> &schedule, int current,
                   std::string &tasksScheduled, int totalScheduledTasks, std::unordered_set<std::string> &dp);
+
+    int backtrack(int index, std::vector<std::vector<Task>> &schedule, int current,
+                  std::string &tasksScheduled, int totalScheduledTasks, std::unordered_set<std::string> &dp,
+                  int beginning, int end);
 };
 
 

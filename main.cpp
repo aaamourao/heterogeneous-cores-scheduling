@@ -4,12 +4,12 @@
 #include "src/Task.h"
 #include "src/Scheduler.h"
 
-const int numberOfTasks = 20;
+const int numberOfTasks = 10;
 const int numberOfFastCores = 4;
 const int numberOfLowPowerCores = 4;
 const double slowFactor = 1.8;
 
-int main() {
+std::vector<Task> generateBenchmark() {
     std::vector<Task> tasks;
 
     std::random_device random;
@@ -21,26 +21,36 @@ int main() {
         Task task(duration);
         tasks.push_back(task);
     }
-    Scheduler scheduler(numberOfFastCores, numberOfLowPowerCores, slowFactor);
-    for (Task& task : tasks) {
-        scheduler.addTask(task);
-    }
+    return tasks;
+}
 
-    scheduler.execute();
-
+void printResult(const Scheduler scheduler) {
     std::cout << "MakeSpan found for " << numberOfTasks << " tasks on ";
     std::cout << numberOfFastCores << " fast cores and " << numberOfLowPowerCores;
     std::cout << " low power cores which are " << slowFactor << " slower: ";
     std::cout << scheduler.getMakeSpan() << std::endl;
 
-    scheduler.saveSchedule();
-    std::vector<std::shared_ptr<Task>> scheduledTasks = scheduler.getTasks();
+    const std::vector<std::shared_ptr<Task>> scheduledTasks = scheduler.getTasks();
 
-    for (int i = 0; i < tasks.size(); ++i) {
-        std::cout << "task " << scheduledTasks[i]->getId() << " scheduled to core " << scheduledTasks[i]->getAssignedCoreIndex();
-        std::cout << ", starting at " << scheduledTasks[i]->getStart() << " and finishing at ";
-        std::cout << scheduledTasks[i]->getEnd() << std::endl;
+    for (const auto & scheduledTask : scheduledTasks) {
+        std::cout << "task " << scheduledTask->getId() << " scheduled to core " << scheduledTask->getAssignedCoreIndex();
+        std::cout << ", starting at " << scheduledTask->getStart() << " and finishing at ";
+        std::cout << scheduledTask->getEnd() << std::endl;
     }
+}
+
+int main() {
+    std::vector<Task> tasks = generateBenchmark();
+    Scheduler scheduler(numberOfFastCores, numberOfLowPowerCores, slowFactor);
+    for (Task& task : tasks) {
+        scheduler.addTask(task);
+    }
+
+    // Optimal
+    scheduler.execute();
+    scheduler.saveSchedule();
+
+    printResult(scheduler);
 
     return 0;
 }

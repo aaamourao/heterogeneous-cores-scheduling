@@ -7,4 +7,6 @@ add_executable(networkFlowsTF main.cpp
         src/Scheduler.cpp
         src/Scheduler.h
         src/Task.cpp
-        src/Task.h)
+        src/Task.h
+        src/MetaHeuristic.cpp
+        src/MetaHeuristic.h)
