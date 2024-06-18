@@ -29,7 +29,7 @@ int Scheduler::getMakeSpan() const {
 int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedule, const int current,
                          std::string& tasksScheduled, const int totalScheduledTasks,
                          std::unordered_set<std::string>& dp) {
-    if (totalScheduledTasks == tasks.size() || current > makeSpan) {
+    if (totalScheduledTasks == tasks.size() || current >= makeSpan) {
         if (current < makeSpan) {
             makeSpan = current;
             bestSchedule = schedule;
@@ -72,8 +72,6 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
         }
     }
 
-    // This is an optional operation that is done for plotting results
-    saveSchedule();
     return minMakeSpan;
 }
 

@@ -4,10 +4,10 @@
 #include "src/Task.h"
 #include "src/Scheduler.h"
 
-const int numberOfTasks = 200;
+const int numberOfTasks = 20;
 const int numberOfFastCores = 4;
 const int numberOfLowPowerCores = 4;
-const double slowFactor = 1.2;
+const double slowFactor = 1.8;
 
 int main() {
     std::vector<Task> tasks;
@@ -33,6 +33,7 @@ int main() {
     std::cout << " low power cores which are " << slowFactor << " slower: ";
     std::cout << scheduler.getMakeSpan() << std::endl;
 
+    scheduler.saveSchedule();
     std::vector<std::shared_ptr<Task>> scheduledTasks = scheduler.getTasks();
 
     for (int i = 0; i < tasks.size(); ++i) {
