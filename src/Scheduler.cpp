@@ -29,7 +29,7 @@ int Scheduler::getMakeSpan() const {
 int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedule, const int current,
                          std::string& tasksScheduled, const int totalScheduledTasks,
                          std::unordered_set<std::string>& dp) {
-    if (totalScheduledTasks == tasks.size()) {
+    if (totalScheduledTasks == tasks.size() || current > makeSpan) {
         if (current < makeSpan) {
             makeSpan = current;
             bestSchedule = schedule;
@@ -45,11 +45,8 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
     double factor = 1.0;
     if (coreIndex >= nFastCores) {
         factor = slowFactor;
-        // If the core is slow, we may not assign a task to this core at this time
-        minMakeSpan = std::min(minMakeSpan, backtrack(coreIndex + 1, schedule, current, tasksScheduled,
-                                                      totalScheduledTasks, dp));
     }
-    // Assign a task to the core
+
     for (int i = 0; i < tasks.size(); ++i) {
         if (tasksScheduled[i] == 'x') {
             std::shared_ptr<Task> task = tasks[i];

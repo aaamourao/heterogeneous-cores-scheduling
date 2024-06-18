@@ -4,10 +4,10 @@
 #include "src/Task.h"
 #include "src/Scheduler.h"
 
-const int numberOfTasks = 100;
+const int numberOfTasks = 200;
 const int numberOfFastCores = 4;
 const int numberOfLowPowerCores = 4;
-const double slowFactor = 1.5;
+const double slowFactor = 1.2;
 
 int main() {
     std::vector<Task> tasks;
