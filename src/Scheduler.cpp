@@ -27,7 +27,7 @@ int Scheduler::getMakeSpan() const {
 }
 
 int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedule, const int current,
-                         std::vector<bool>& tasksScheduled, const int totalScheduledTasks) {
+                         std::string& tasksScheduled, const int totalScheduledTasks) {
     if (totalScheduledTasks == tasks.size()) {
         if (current < makeSpan) {
             makeSpan = current;
@@ -43,12 +43,12 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
     if (coreIndex >= nFastCores) {
         factor = slowFactor;
         // If the core is slow, we may not assign a task to this core at this time
-        minMakeSpan = std::min(minMakeSpan, backtrack(coreIndex + 1, schedule, current,tasksScheduled,
+        minMakeSpan = std::min(minMakeSpan, backtrack(coreIndex + 1, schedule, current, tasksScheduled,
                                                       totalScheduledTasks));
     }
     // Assign a task to the core
     for (int i = 0; i < tasks.size(); ++i) {
-        if (!tasksScheduled[i]) {
+        if (tasksScheduled[i] == '0') {
             std::shared_ptr<Task> task = tasks[i];
             int start = 0;
             if (!schedule[coreIndex].empty()) {
@@ -56,14 +56,14 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
             }
             schedule[coreIndex].push_back(*task);
             schedule[coreIndex][schedule[coreIndex].size() - 1].scheduleTask(start, coreIndex, factor);
-            tasksScheduled[i] = true;
+            tasksScheduled[i] = '1';
             minMakeSpan = std::min(minMakeSpan, backtrack(coreIndex + 1, schedule,
                                                           std::max(current,schedule[coreIndex][
                                                                   schedule[coreIndex].size() - 1
                                                                   ].getEnd()),
                                                           tasksScheduled, totalScheduledTasks + 1));
             schedule[coreIndex].pop_back();
-            tasksScheduled[i] = false;
+            tasksScheduled[i] = '0';
         }
     }
 
@@ -76,7 +76,7 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
 void Scheduler::execute() {
     const int totalCpus = nFastCores + nLowPowerCores;
     std::vector<std::vector<Task>> schedule(totalCpus, std::vector<Task>());
-    std::vector<bool> tasksScheduled(tasks.size(), false);
+    std::string tasksScheduled(tasks.size(), '0');
     makeSpan = backtrack(0, schedule, 0, tasksScheduled, 0);
 }
 

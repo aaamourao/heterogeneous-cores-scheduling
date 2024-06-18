@@ -40,7 +40,7 @@ private:
     }
 
     int backtrack(int index, std::vector<std::vector<Task>>& schedule, int current,
-                  std::vector<bool>& tasksScheduled, int totalScheduledTasks);
+                  std::string& tasksScheduled, int totalScheduledTasks);
 
     void saveSchedule();
 };
