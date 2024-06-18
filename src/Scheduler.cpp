@@ -14,6 +14,11 @@ void Scheduler::addTask(const Task task) {
     tasks.push_back(std::make_shared<Task>(task));
 }
 
+void Scheduler::reset() {
+    bestSchedule.clear();
+    makeSpan = std::numeric_limits<int>::max();
+}
+
 int Scheduler::getNFastCores() const {
     return nFastCores;
 }

@@ -36,6 +36,8 @@ public:
 
     void executeBatch(int start, int end, int current);
 
+    void reset();
+
 private:
     Scheduler() {
         nFastCores = 0;

@@ -5,7 +5,7 @@
 #include "src/Scheduler.h"
 #include "src/MetaHeuristic.h"
 
-const int numberOfTasks = 200;
+const int numberOfTasks = 20;
 const int numberOfFastCores = 4;
 const int numberOfLowPowerCores = 4;
 const double slowFactor = 1.8;
@@ -50,8 +50,11 @@ int main() {
     }
 
     // Optimal
-    // scheduler->execute();
-    // scheduler->saveSchedule();
+    scheduler->execute();
+    scheduler->saveSchedule();
+    printResult(scheduler);
+
+    scheduler->reset();
 
     MetaHeuristic meta = MetaHeuristic(scheduler);
     meta.execute();
