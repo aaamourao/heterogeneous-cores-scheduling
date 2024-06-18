@@ -137,6 +137,9 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
 void Scheduler::executeBatch(const int start, const int end, const int current) {
     const int totalCpus = nFastCores + nLowPowerCores;
     std::vector<std::vector<Task>> schedule(totalCpus, std::vector<Task>());
+    if (!bestSchedule.empty()) {
+        schedule = bestSchedule;
+    }
     std::string tasksScheduled(end - start, 'x');
     std::unordered_set<std::string> dp;
     // reinitialize makeSpan or it is going to stop immediately
