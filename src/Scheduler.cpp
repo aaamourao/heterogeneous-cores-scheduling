@@ -6,7 +6,8 @@
 #include "Scheduler.h"
 
 Scheduler::Scheduler(const int aNFastCpus, const int aNLowPowerCpus, const double aSlowFactor)
-        : nFastCores(aNFastCpus), nLowPowerCores(aNLowPowerCpus), slowFactor(aSlowFactor), makeSpan(-1) {
+        : nFastCores(aNFastCpus), nLowPowerCores(aNLowPowerCpus), slowFactor(aSlowFactor),
+        makeSpan(std::numeric_limits<int>::max()) {
 }
 
 void Scheduler::addTask(const Task task) {
@@ -28,6 +29,10 @@ int Scheduler::getMakeSpan() const {
 int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedule, const int current,
                          std::vector<bool>& tasksScheduled, const int totalScheduledTasks) {
     if (totalScheduledTasks == tasks.size()) {
+        if (current < makeSpan) {
+            makeSpan = current;
+            bestSchedule = schedule;
+        }
         return current;
     }
 
@@ -52,17 +57,18 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
             schedule[coreIndex].push_back(*task);
             schedule[coreIndex][schedule[coreIndex].size() - 1].scheduleTask(start, coreIndex, factor);
             tasksScheduled[i] = true;
-            int currMakeSpan = backtrack(coreIndex + 1, schedule,
-                                         std::max(current,schedule[coreIndex][schedule[coreIndex].size() - 1].getEnd()),
-                                         tasksScheduled, totalScheduledTasks + 1);
-            if (minMakeSpan >= currMakeSpan) {
-                minMakeSpan = currMakeSpan;
-                task->scheduleTask(start, coreIndex, factor);
-            }
+            minMakeSpan = std::min(minMakeSpan, backtrack(coreIndex + 1, schedule,
+                                                          std::max(current,schedule[coreIndex][
+                                                                  schedule[coreIndex].size() - 1
+                                                                  ].getEnd()),
+                                                          tasksScheduled, totalScheduledTasks + 1));
             schedule[coreIndex].pop_back();
             tasksScheduled[i] = false;
         }
     }
+
+    // This is an optional operation that is done for plotting results
+    saveSchedule();
 
     return minMakeSpan;
 }
@@ -76,4 +82,18 @@ void Scheduler::execute() {
 
 std::vector<std::shared_ptr<Task>> Scheduler::getTasks() const {
     return tasks;
+}
+
+void Scheduler::saveSchedule() {
+    if (!bestSchedule.empty()) {
+        tasks.clear();
+        for (const std::vector<Task>& coreSchedule : bestSchedule) {
+            for (const Task& task : coreSchedule) {
+                addTask(task);
+            }
+        }
+    }
+    std::sort(tasks.begin(), tasks.end(), [](const std::shared_ptr<Task>& lhs, const std::shared_ptr<Task>& rhs) {
+        return lhs->getId() < rhs->getId();
+    });
 }

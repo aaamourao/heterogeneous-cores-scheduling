@@ -14,6 +14,7 @@ class Scheduler {
     int nLowPowerCores;
     double slowFactor;
     std::vector<std::shared_ptr<Task>> tasks;
+    std::vector<std::vector<Task>> bestSchedule;
     int makeSpan;
 public:
     explicit Scheduler(int aNFastCPUs, int aNLowPowerCPUs, double aSlowFactor);
@@ -40,6 +41,8 @@ private:
 
     int backtrack(int index, std::vector<std::vector<Task>>& schedule, int current,
                   std::vector<bool>& tasksScheduled, int totalScheduledTasks);
+
+    void saveSchedule();
 };
 
 
