@@ -9,11 +9,20 @@
 #include "Scheduler.h"
 
 class MetaHeuristic {
-    Scheduler scheduler;
+    std::shared_ptr<Scheduler> scheduler;
 public:
-    MetaHeuristic(Scheduler aScheduler);
+    explicit MetaHeuristic(std::shared_ptr<Scheduler> aScheduler);
 
     void execute(int batchSize = 10);
+
+    void saveSchedule();
+
+    std::shared_ptr<Scheduler> getScheduler();
+
+private:
+    MetaHeuristic() {
+        scheduler = nullptr;
+    };
 };
 
 

@@ -86,7 +86,7 @@ void Scheduler::execute() {
 int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedule, const int current,
                          std::string& tasksScheduled, const int totalScheduledTasks,
                          std::unordered_set<std::string>& dp, const int beginning, const int end) {
-    if (totalScheduledTasks == tasks.size() || current >= makeSpan) {
+    if (totalScheduledTasks == beginning - end || current >= makeSpan) {
         if (current < makeSpan) {
             makeSpan = current;
             bestSchedule = schedule;
@@ -107,7 +107,7 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
     for (int ii = beginning; ii < end; ++ii) {
         const int i = ii - beginning;
         if (tasksScheduled[i] == 'x') {
-            std::shared_ptr<Task> task = tasks[i];
+            std::shared_ptr<Task> task = tasks[ii];
             int start = 0;
             if (!schedule[coreIndex].empty()) {
                 start = schedule[coreIndex][schedule[coreIndex].size() - 1].getEnd();
@@ -124,7 +124,8 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
                                                           std::max(current, schedule[coreIndex][
                                                                   schedule[coreIndex].size() - 1
                                                           ].getEnd()),
-                                                          tasksScheduled, totalScheduledTasks + 1, dp));
+                                                          tasksScheduled, totalScheduledTasks + 1, dp,
+                                                          beginning, end));
             schedule[coreIndex].pop_back();
             tasksScheduled[i] = 'x';
         }
@@ -133,12 +134,14 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
     return minMakeSpan;
 }
 
-void Scheduler::executeBatch(const int start, const int end) {
+void Scheduler::executeBatch(const int start, const int end, const int current) {
     const int totalCpus = nFastCores + nLowPowerCores;
     std::vector<std::vector<Task>> schedule(totalCpus, std::vector<Task>());
     std::string tasksScheduled(end - start, 'x');
     std::unordered_set<std::string> dp;
-    makeSpan = backtrack(0, schedule, 0, tasksScheduled, 0, dp, start, end);
+    // reinitialize makeSpan or it is going to stop immediately
+    makeSpan = std::numeric_limits<int>::max();
+    makeSpan = backtrack(0, schedule, current, tasksScheduled, 0, dp, start, end);
 }
 
 std::vector<std::shared_ptr<Task>> Scheduler::getTasks() const {

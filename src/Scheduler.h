@@ -34,7 +34,7 @@ public:
 
     void saveSchedule();
 
-    void executeBatch(int start, int end);
+    void executeBatch(int start, int end, int current);
 
 private:
     Scheduler() {

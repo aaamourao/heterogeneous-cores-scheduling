@@ -3,8 +3,9 @@
 #include <random>
 #include "src/Task.h"
 #include "src/Scheduler.h"
+#include "src/MetaHeuristic.h"
 
-const int numberOfTasks = 10;
+const int numberOfTasks = 200;
 const int numberOfFastCores = 4;
 const int numberOfLowPowerCores = 4;
 const double slowFactor = 1.8;
@@ -24,13 +25,13 @@ std::vector<Task> generateBenchmark() {
     return tasks;
 }
 
-void printResult(const Scheduler scheduler) {
+void printResult(const std::shared_ptr<Scheduler>& scheduler) {
     std::cout << "MakeSpan found for " << numberOfTasks << " tasks on ";
     std::cout << numberOfFastCores << " fast cores and " << numberOfLowPowerCores;
     std::cout << " low power cores which are " << slowFactor << " slower: ";
-    std::cout << scheduler.getMakeSpan() << std::endl;
+    std::cout << scheduler->getMakeSpan() << std::endl;
 
-    const std::vector<std::shared_ptr<Task>> scheduledTasks = scheduler.getTasks();
+    const std::vector<std::shared_ptr<Task>> scheduledTasks = scheduler->getTasks();
 
     for (const auto & scheduledTask : scheduledTasks) {
         std::cout << "task " << scheduledTask->getId() << " scheduled to core " << scheduledTask->getAssignedCoreIndex();
@@ -41,16 +42,22 @@ void printResult(const Scheduler scheduler) {
 
 int main() {
     std::vector<Task> tasks = generateBenchmark();
-    Scheduler scheduler(numberOfFastCores, numberOfLowPowerCores, slowFactor);
+    std::shared_ptr<Scheduler> scheduler = std::make_shared<Scheduler>(numberOfFastCores,
+                                                                       numberOfLowPowerCores,
+                                                                       slowFactor);
     for (Task& task : tasks) {
-        scheduler.addTask(task);
+        scheduler->addTask(task);
     }
 
     // Optimal
-    scheduler.execute();
-    scheduler.saveSchedule();
+    // scheduler->execute();
+    // scheduler->saveSchedule();
 
-    printResult(scheduler);
+    MetaHeuristic meta = MetaHeuristic(scheduler);
+    meta.execute();
+    meta.saveSchedule();
+
+    printResult(meta.getScheduler());
 
     return 0;
 }
