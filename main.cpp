@@ -4,7 +4,7 @@
 #include "src/Task.h"
 #include "src/Scheduler.h"
 
-const int numberOfTasks = 10;
+const int numberOfTasks = 25;
 const int numberOfFastCores = 4;
 const int numberOfLowPowerCores = 4;
 const double slowFactor = 1.5;

@@ -27,8 +27,8 @@ int Scheduler::getMakeSpan() const {
 }
 
 int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedule, const int current,
-                         std::string& tasksScheduled, const int totalScheduledTasks, std::string& coreAssigned,
-                         std::unordered_map<std::string, std::unordered_set<std::string>>& dp) {
+                         std::string& tasksScheduled, const int totalScheduledTasks,
+                         std::unordered_set<std::string>& dp) {
     if (totalScheduledTasks == tasks.size()) {
         if (current < makeSpan) {
             makeSpan = current;
@@ -37,7 +37,7 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
         return current;
     }
 
-    dp[tasksScheduled].insert(coreAssigned);
+    dp.insert(tasksScheduled);
 
     const int coreIndex = index == nFastCores + nLowPowerCores ? 0 : index;
 
@@ -47,11 +47,11 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
         factor = slowFactor;
         // If the core is slow, we may not assign a task to this core at this time
         minMakeSpan = std::min(minMakeSpan, backtrack(coreIndex + 1, schedule, current, tasksScheduled,
-                                                      totalScheduledTasks, coreAssigned, dp));
+                                                      totalScheduledTasks, dp));
     }
     // Assign a task to the core
     for (int i = 0; i < tasks.size(); ++i) {
-        if (tasksScheduled[i] == '0') {
+        if (tasksScheduled[i] == 'x') {
             std::shared_ptr<Task> task = tasks[i];
             int start = 0;
             if (!schedule[coreIndex].empty()) {
@@ -59,23 +59,19 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
             }
             schedule[coreIndex].push_back(*task);
             schedule[coreIndex][schedule[coreIndex].size() - 1].scheduleTask(start, coreIndex, factor);
-            tasksScheduled[i] = '1';
-            coreAssigned[i] = static_cast<char>(coreIndex + '0');
+            tasksScheduled[i] = static_cast<char>(coreIndex + '0');
 
             // We may actually be doing a DFS instead of Dynamic Programming here
             if (dp.find(tasksScheduled) != dp.end()) {
-                if (dp[tasksScheduled].find(coreAssigned) != dp[tasksScheduled].end()) {
-                    continue;
-                }
+                continue;
             }
             minMakeSpan = std::min(minMakeSpan, backtrack(coreIndex + 1, schedule,
                                                           std::max(current,schedule[coreIndex][
                                                                   schedule[coreIndex].size() - 1
                                                                   ].getEnd()),
-                                                          tasksScheduled, totalScheduledTasks + 1, coreAssigned, dp));
+                                                          tasksScheduled, totalScheduledTasks + 1, dp));
             schedule[coreIndex].pop_back();
-            coreAssigned[i] = 'x';
-            tasksScheduled[i] = '0';
+            tasksScheduled[i] = 'x';
         }
     }
 
@@ -87,10 +83,9 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
 void Scheduler::execute() {
     const int totalCpus = nFastCores + nLowPowerCores;
     std::vector<std::vector<Task>> schedule(totalCpus, std::vector<Task>());
-    std::string tasksScheduled(tasks.size(), '0');
-    std::string coreAssigned(nFastCores + nLowPowerCores, 'x');
-    std::unordered_map<std::string, std::unordered_set<std::string>> dp;
-    makeSpan = backtrack(0, schedule, 0, tasksScheduled, 0, coreAssigned, dp);
+    std::string tasksScheduled(tasks.size(), 'x');
+    std::unordered_set<std::string> dp;
+    makeSpan = backtrack(0, schedule, 0, tasksScheduled, 0, dp);
 }
 
 std::vector<std::shared_ptr<Task>> Scheduler::getTasks() const {

@@ -41,8 +41,7 @@ private:
     }
 
     int backtrack(int index, std::vector<std::vector<Task>> &schedule, int current,
-                  std::string &tasksScheduled, int totalScheduledTasks, std::string &coreAssigned,
-                  std::unordered_map<std::string, std::unordered_set<std::string>> &dp);
+                  std::string &tasksScheduled, int totalScheduledTasks, std::unordered_set<std::string> &dp);
 
     void saveSchedule();
 };
