@@ -30,6 +30,8 @@ public:
     int getAssignedCoreIndex() const;
 
     void scheduleTask(int aStart, int coreIndex, double aSlowFactor = 1.0);
+
+    bool operator==(const Task& rhs) const;
 private:
     Task() {}
 };

@@ -3,11 +3,17 @@
 //
 
 #include <iostream>
+#include <queue>
 #include "Scheduler.h"
 
-Scheduler::Scheduler(const int aNFastCpus, const int aNLowPowerCpus, const double aSlowFactor)
-        : nFastCores(aNFastCpus), nLowPowerCores(aNLowPowerCpus), slowFactor(aSlowFactor),
-        makeSpan(std::numeric_limits<int>::max()) {
+int Scheduler::fastCores = 0;
+int Scheduler::lowPowerCores = 0;
+
+Scheduler::Scheduler(const int aNFastCores, const int aNLowPowerCores, const double aSlowFactor)
+        : nFastCores(aNFastCores), nLowPowerCores(aNLowPowerCores), slowFactor(aSlowFactor),
+          makeSpan(std::numeric_limits<int>::max()) {
+    fastCores = aNFastCores;
+    lowPowerCores = aNLowPowerCores;
 }
 
 void Scheduler::addTask(const Task task) {
@@ -32,49 +38,44 @@ int Scheduler::getMakeSpan() const {
 }
 
 int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedule, const int current,
-                         std::string& tasksScheduled, const int totalScheduledTasks,
                          std::unordered_set<std::string>& dp) {
-    if (totalScheduledTasks == tasks.size() || current >= makeSpan) {
+    if (index == tasks.size() || current >= makeSpan) {
         if (current < makeSpan) {
             makeSpan = current;
             bestSchedule = schedule;
         }
         return current;
     }
-
-    dp.insert(tasksScheduled);
-
-    const int coreIndex = index == nFastCores + nLowPowerCores ? 0 : index;
+    SchedulerHasher hasher;
+    dp.insert(hasher(schedule));
 
     int minMakeSpan = std::numeric_limits<int>::max();
     double factor = 1.0;
-    if (coreIndex >= nFastCores) {
-        factor = slowFactor;
-    }
 
-    for (int i = 0; i < tasks.size(); ++i) {
-        if (tasksScheduled[i] == 'x') {
-            std::shared_ptr<Task> task = tasks[i];
-            int start = 0;
-            if (!schedule[coreIndex].empty()) {
-                start = schedule[coreIndex][schedule[coreIndex].size() - 1].getEnd();
-            }
-            schedule[coreIndex].push_back(*task);
-            schedule[coreIndex][schedule[coreIndex].size() - 1].scheduleTask(start, coreIndex, factor);
-            tasksScheduled[i] = static_cast<char>(coreIndex + '0');
-
-            // We may actually be doing a DFS instead of Dynamic Programming here
-            if (dp.find(tasksScheduled) != dp.end()) {
-                continue;
-            }
-            minMakeSpan = std::min(minMakeSpan, backtrack(coreIndex + 1, schedule,
-                                                          std::max(current, schedule[coreIndex][
-                                                                  schedule[coreIndex].size() - 1
-                                                                  ].getEnd()),
-                                                          tasksScheduled, totalScheduledTasks + 1, dp));
-            schedule[coreIndex].pop_back();
-            tasksScheduled[i] = 'x';
+    for (int coreIndex = 0; coreIndex < nFastCores + nLowPowerCores; ++coreIndex) {
+        if (coreIndex >= nFastCores) {
+            factor = slowFactor;
         }
+
+        std::shared_ptr<Task> task = tasks[index];
+        int start = 0;
+        if (!schedule[coreIndex].empty()) {
+            start = schedule[coreIndex][schedule[coreIndex].size() - 1].getEnd();
+        }
+        schedule[coreIndex].push_back(*task);
+        schedule[coreIndex][schedule[coreIndex].size() - 1].scheduleTask(start, coreIndex, factor);
+
+        // We may actually be doing a DFS instead of Dynamic Programming here
+        if (dp.find(hasher(schedule)) != dp.end()) {
+            schedule[coreIndex].pop_back();
+            continue;
+        }
+        minMakeSpan = std::min(minMakeSpan, backtrack(index + 1, schedule,
+                                                      std::max(current, schedule[coreIndex][
+                                                              schedule[coreIndex].size() - 1
+                                                              ].getEnd()), dp));
+        schedule[coreIndex].pop_back();
+
     }
 
     return minMakeSpan;
@@ -85,13 +86,13 @@ void Scheduler::execute() {
     std::vector<std::vector<Task>> schedule(totalCpus, std::vector<Task>());
     std::string tasksScheduled(tasks.size(), 'x');
     std::unordered_set<std::string> dp;
-    makeSpan = backtrack(0, schedule, 0, tasksScheduled, 0, dp);
+    makeSpan = backtrack(0, schedule, 0, dp);
 }
 
 int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedule, const int current,
-                         std::string& tasksScheduled, const int totalScheduledTasks,
-                         std::unordered_set<std::string>& dp, const int beginning, const int end) {
-    if (totalScheduledTasks == end - beginning || current >= makeSpan) {
+                         std::string& tasksScheduled, std::unordered_set<std::string>& dp, const int beginning,
+                         const int end) {
+    if (index == end - beginning || current >= makeSpan) {
         if (current < makeSpan) {
             makeSpan = current;
             bestSchedule = schedule;
@@ -101,38 +102,35 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
 
     dp.insert(tasksScheduled);
 
-    const int coreIndex = index == nFastCores + nLowPowerCores ? 0 : index;
-
     int minMakeSpan = std::numeric_limits<int>::max();
     double factor = 1.0;
-    if (coreIndex >= nFastCores) {
-        factor = slowFactor;
-    }
 
-    for (int ii = beginning; ii < end; ++ii) {
-        const int i = ii - beginning;
-        if (tasksScheduled[i] == 'x') {
-            std::shared_ptr<Task> task = tasks[ii];
+    for (int coreIndex = 0; coreIndex < nFastCores + nLowPowerCores; ++coreIndex) {
+        const int realIndex = index + beginning;
+        if (coreIndex >= nFastCores) {
+            factor = slowFactor;
+        }
+        if (tasksScheduled[index] == 'x') {
+            std::shared_ptr<Task> task = tasks[realIndex];
             int start = 0;
             if (!schedule[coreIndex].empty()) {
                 start = schedule[coreIndex][schedule[coreIndex].size() - 1].getEnd();
             }
             schedule[coreIndex].push_back(*task);
             schedule[coreIndex][schedule[coreIndex].size() - 1].scheduleTask(start, coreIndex, factor);
-            tasksScheduled[i] = static_cast<char>(coreIndex + '0');
+            tasksScheduled[index] = static_cast<char>(coreIndex + '0');
 
             // We may actually be doing a DFS instead of Dynamic Programming here
             if (dp.find(tasksScheduled) != dp.end()) {
                 continue;
             }
-            minMakeSpan = std::min(minMakeSpan, backtrack(coreIndex + 1, schedule,
+            minMakeSpan = std::min(minMakeSpan, backtrack(index + 1, schedule,
                                                           std::max(current, schedule[coreIndex][
                                                                   schedule[coreIndex].size() - 1
                                                           ].getEnd()),
-                                                          tasksScheduled, totalScheduledTasks + 1, dp,
-                                                          beginning, end));
+                                                          tasksScheduled, dp, beginning, end));
             schedule[coreIndex].pop_back();
-            tasksScheduled[i] = 'x';
+            tasksScheduled[index] = 'x';
         }
     }
 
@@ -149,7 +147,7 @@ void Scheduler::executeBatch(const int start, const int end, const int current) 
     std::unordered_set<std::string> dp;
     // reinitialize makeSpan or it is going to stop immediately
     makeSpan = std::numeric_limits<int>::max();
-    makeSpan = backtrack(0, schedule, current, tasksScheduled, 0, dp, start, end);
+    makeSpan = backtrack(0, schedule, current, tasksScheduled, dp, start, end);
 }
 
 std::vector<std::shared_ptr<Task>> Scheduler::getTasks() const {

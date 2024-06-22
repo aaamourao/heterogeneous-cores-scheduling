@@ -5,9 +5,9 @@
 #include "src/Scheduler.h"
 #include "src/MetaHeuristic.h"
 
-const int numberOfTasks = 20;
-const int numberOfFastCores = 4;
-const int numberOfLowPowerCores = 4;
+const int numberOfTasks = 60;
+const int numberOfFastCores = 2;
+const int numberOfLowPowerCores = 2;
 const double slowFactor = 1.8;
 
 std::vector<Task> generateBenchmark() {
@@ -54,13 +54,13 @@ int main() {
     scheduler->saveSchedule();
     printResult(scheduler);
 
-    scheduler->reset();
+    //scheduler->reset();
 
-    MetaHeuristic meta = MetaHeuristic(scheduler);
-    meta.execute();
-    meta.saveSchedule();
+    //MetaHeuristic meta = MetaHeuristic(scheduler);
+    //meta.execute(5);
+    //meta.saveSchedule();
 
-    printResult(meta.getScheduler());
+    //printResult(meta.getScheduler());
 
     return 0;
 }

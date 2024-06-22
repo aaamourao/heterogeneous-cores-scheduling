@@ -47,3 +47,7 @@ void Task::scheduleTask(const int aStart, const int aCoreIndex, const double aSl
 int Task::getId() const {
     return id;
 }
+
+bool Task::operator==(const Task& rhs) const {
+    return id == rhs.getId();
+}
