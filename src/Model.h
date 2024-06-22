@@ -6,10 +6,20 @@
 #define NETWORKFLOWSTF_MODEL_H
 
 
-class Model {
-public:
-    Model();
+#include <ilomodel.h>
+#include <vector>
+#include "Task.h"
 
+class Model {
+    IloEnv env;
+    IloModel cplexModel;
+    int nFastCores;
+    int nLowPowerCores;
+    std::vector<IloNumVar> runningOnMachineVars;
+    std::vector<IloNumVar> tasksDuration;
+public:
+    explicit Model(int aNFastCores, int aNLowPowerCores, const std::vector<Task>& aTask);
+    virtual ~Model();
 };
 
 
