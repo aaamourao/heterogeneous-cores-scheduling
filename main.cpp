@@ -7,8 +7,8 @@
 #include "src/Model.h"
 
 const int numberOfTasks = 20;
-const int numberOfFastCores = 4;
-const int numberOfLowPowerCores = 4;
+const int numberOfFastCores = 1;
+const int numberOfLowPowerCores = 1;
 const double slowFactor = 1.8;
 
 std::vector<std::shared_ptr<Task>> generateBenchmark() {

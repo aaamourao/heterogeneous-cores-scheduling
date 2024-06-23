@@ -10,7 +10,7 @@ Model::Model(const int aNFastCores, const int aNLowPowerCores, std::vector<std::
     env = std::make_unique<IloEnv>();
     cplexModel = IloModel(*env);
 
-    IloNumVar makeSpan = IloNumVar(*env, 0.0, 500.0, ILOFLOAT);
+    IloNumVar makeSpan = IloNumVar(*env, 0.0, 1000000.0, ILOFLOAT);
     cplexModel.add(makeSpan);
     for (const std::shared_ptr<Task>& task : tasks) {
         for (int core = 0; core < nFastCores + nLowPowerCores; ++core) {

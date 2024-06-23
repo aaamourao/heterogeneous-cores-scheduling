@@ -18,7 +18,6 @@ class Model {
     int nFastCores;
     int nLowPowerCores;
     double slowFactor;
-    // TODO: optimzie it by saving shared_ptr
     std::vector<std::shared_ptr<Task>> tasks;
     std::unordered_map<int, std::unordered_map<int, IloNumVar>> runningOnMachineVars;
     IloCplex solver;
