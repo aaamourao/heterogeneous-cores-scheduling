@@ -15,14 +15,14 @@ class Scheduler {
     int nFastCores;
     int nLowPowerCores;
     double slowFactor;
-    std::vector<std::shared_ptr<Task>> tasks;
+    std::unordered_map<int, std::shared_ptr<Task>> tasks;
     std::vector<std::vector<Task>> bestSchedule;
 
     int makeSpan;
 public:
     explicit Scheduler(int aNFastCores, int aNLowPowerCores, double aSlowFactor);
 
-    void addTask(Task task);
+    void addTask(std::shared_ptr<Task>& task);
 
     [[maybe_unused]] int getNFastCores() const;
 
@@ -30,7 +30,7 @@ public:
 
     int getMakeSpan() const;
 
-    [[nodiscard]] std::vector<std::shared_ptr<Task>> getTasks() const;
+    [[nodiscard]] std::unordered_map<int, std::shared_ptr<Task>> getTasks() const;
 
     void execute();
 

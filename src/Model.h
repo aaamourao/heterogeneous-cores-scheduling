@@ -19,12 +19,12 @@ class Model {
     int nLowPowerCores;
     double slowFactor;
     // TODO: optimzie it by saving shared_ptr
-    std::vector<Task> tasks;
+    std::vector<std::shared_ptr<Task>> tasks;
     std::unordered_map<int, std::unordered_map<int, IloNumVar>> runningOnMachineVars;
     IloCplex solver;
     IloObjective fObj;
 public:
-    explicit Model(int aNFastCores, int aNLowPowerCores, const std::vector<Task>& aTask, double aSlowFactor);
+    explicit Model(int aNFastCores, int aNLowPowerCores, std::vector<std::shared_ptr<Task>>& aTask, double aSlowFactor);
 
     virtual ~Model();
 

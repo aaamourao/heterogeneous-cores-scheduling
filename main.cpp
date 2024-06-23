@@ -11,8 +11,8 @@ const int numberOfFastCores = 4;
 const int numberOfLowPowerCores = 4;
 const double slowFactor = 1.8;
 
-std::vector<Task> generateBenchmark() {
-    std::vector<Task> tasks;
+std::vector<std::shared_ptr<Task>> generateBenchmark() {
+    std::vector<std::shared_ptr<Task>> tasks;
 
     std::random_device random;
     std::mt19937 generator(random());
@@ -20,8 +20,7 @@ std::vector<Task> generateBenchmark() {
     for (int i = 0; i < numberOfTasks; ++i) {
         const int duration = distribution(generator);
         std::cout << "task " << i << " duration: " << duration << std::endl;
-        Task task(duration);
-        tasks.push_back(task);
+        tasks.push_back(std::make_shared<Task>(duration));
     }
     return tasks;
 }
@@ -32,9 +31,10 @@ void printResult(const std::shared_ptr<Scheduler>& scheduler) {
     std::cout << " low power cores which are " << slowFactor << " slower: ";
     std::cout << scheduler->getMakeSpan() << std::endl;
 
-    const std::vector<std::shared_ptr<Task>> scheduledTasks = scheduler->getTasks();
+    const std::unordered_map<int, std::shared_ptr<Task>> scheduledTasks = scheduler->getTasks();
 
-    for (const auto & scheduledTask : scheduledTasks) {
+    for (const auto & kv : scheduledTasks) {
+        std::shared_ptr<Task> scheduledTask = kv.second;
         std::cout << "task " << scheduledTask->getId() << " scheduled to core " << scheduledTask->getAssignedCoreIndex();
         std::cout << ", starting at " << scheduledTask->getStart() << " and finishing at ";
         std::cout << scheduledTask->getEnd() << std::endl;
@@ -42,11 +42,10 @@ void printResult(const std::shared_ptr<Scheduler>& scheduler) {
 }
 
 int main() {
-    // TODO: optimize it by shaving shared ptr... tasks is being copied everywhere
-    std::vector<Task> tasks = generateBenchmark();
+    std::vector<std::shared_ptr<Task>> tasks = generateBenchmark();
     std::shared_ptr<Scheduler> scheduler = std::make_shared<Scheduler>(numberOfFastCores,
                                                                        numberOfLowPowerCores,slowFactor);
-    for (Task& task : tasks) {
+    for (std::shared_ptr<Task>& task : tasks) {
         scheduler->addTask(task);
     }
 

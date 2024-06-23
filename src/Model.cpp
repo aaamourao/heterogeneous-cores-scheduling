@@ -4,20 +4,21 @@
 
 #include "Model.h"
 
-Model::Model(const int aNFastCores, const int aNLowPowerCores, const std::vector<Task>& aTasks, double aSlowFactor)
+Model::Model(const int aNFastCores, const int aNLowPowerCores, std::vector<std::shared_ptr<Task>>& aTasks,
+             double aSlowFactor)
 : nFastCores(aNFastCores), nLowPowerCores(aNLowPowerCores), slowFactor(aSlowFactor), tasks{aTasks} {
     env = std::make_unique<IloEnv>();
     cplexModel = IloModel(*env);
     IloExpr obj(*env);
-    for (const Task& task : aTasks) {
+    for (const std::shared_ptr<Task>& task : aTasks) {
         IloExpr constraintExpr(*env);
         for (int core = 0; core < nFastCores + nLowPowerCores; ++core) {
-            runningOnMachineVars[core].insert({task.getId(), IloNumVar(*env, 0.0, 1.0, ILOBOOL)});
-            cplexModel.add(runningOnMachineVars[core][task.getId()]);
-            const int duration = core < nFastCores ? task.getDuration()
-                    : static_cast<int>(static_cast<double>(task.getDuration()) * slowFactor);
-            obj += runningOnMachineVars[core][task.getId()] * duration;
-            constraintExpr += runningOnMachineVars[core][task.getId()];
+            runningOnMachineVars[core].insert({task->getId(), IloNumVar(*env, 0.0, 1.0, ILOBOOL)});
+            cplexModel.add(runningOnMachineVars[core][task->getId()]);
+            const int duration = core < nFastCores ? task->getDuration()
+                    : static_cast<int>(static_cast<double>(task->getDuration()) * slowFactor);
+            obj += runningOnMachineVars[core][task->getId()] * duration;
+            constraintExpr += runningOnMachineVars[core][task->getId()];
         }
         cplexModel.add(IloRange(*env, 1.0, constraintExpr, 1.0));
     }
@@ -45,9 +46,9 @@ std::vector<std::vector<Task>> Model::getSchedule() {
     std::cout << "function object result = " << solver.getValue(fObj) << std::endl;
 
     for (int core = 0; core < nFastCores + nLowPowerCores; ++core) {
-        for (const Task& task : tasks) {
-            if (solver.getValue(runningOnMachineVars[core][task.getId()]) == 1) {
-                std::cout << "task " << task.getId() << " running on core " << core << std::endl;
+        for (const std::shared_ptr<Task>& task : tasks) {
+            if (solver.getValue(runningOnMachineVars[core][task->getId()]) == 1) {
+                std::cout << "task " << task->getId() << " running on core " << core << std::endl;
             }
         }
     }

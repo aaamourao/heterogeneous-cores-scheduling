@@ -16,8 +16,8 @@ Scheduler::Scheduler(const int aNFastCores, const int aNLowPowerCores, const dou
     lowPowerCores = aNLowPowerCores;
 }
 
-void Scheduler::addTask(const Task task) {
-    tasks.push_back(std::make_shared<Task>(task));
+void Scheduler::addTask(std::shared_ptr<Task>& task) {
+    tasks.insert({task->getId(), task});
 }
 
 void Scheduler::reset() {
@@ -150,20 +150,17 @@ void Scheduler::executeBatch(const int start, const int end, const int current) 
     makeSpan = backtrack(0, schedule, current, tasksScheduled, dp, start, end);
 }
 
-std::vector<std::shared_ptr<Task>> Scheduler::getTasks() const {
+std::unordered_map<int, std::shared_ptr<Task>> Scheduler::getTasks() const {
     return tasks;
 }
 
 void Scheduler::saveSchedule() {
     if (!bestSchedule.empty()) {
-        tasks.clear();
-        for (const std::vector<Task>& coreSchedule : bestSchedule) {
-            for (const Task& task : coreSchedule) {
-                addTask(task);
+        for (int core = 0; core < nFastCores + nLowPowerCores; ++core) {
+            std::vector<Task>& coreSchedule = bestSchedule[core];
+            for (Task& task : coreSchedule) {
+                tasks[task.getId()]->scheduleTask(task.getStart(), core, core < nFastCores ? 1.0 : slowFactor);
             }
         }
     }
-    std::sort(tasks.begin(), tasks.end(), [](const std::shared_ptr<Task>& lhs, const std::shared_ptr<Task>& rhs) {
-        return lhs->getId() < rhs->getId();
-    });
 }
