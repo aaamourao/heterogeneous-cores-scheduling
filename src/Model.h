@@ -22,6 +22,7 @@ class Model {
     std::vector<Task> tasks;
     std::unordered_map<int, std::unordered_map<int, IloNumVar>> runningOnMachineVars;
     IloCplex solver;
+    IloObjective fObj;
 public:
     explicit Model(int aNFastCores, int aNLowPowerCores, const std::vector<Task>& aTask, double aSlowFactor);
 

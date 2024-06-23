@@ -21,7 +21,8 @@ Model::Model(const int aNFastCores, const int aNLowPowerCores, const std::vector
         }
         cplexModel.add(IloRange(*env, 1.0, constraintExpr, 1.0));
     }
-    cplexModel.add(IloMinimize(*env, obj));
+    fObj = IloMinimize(*env, obj);
+    cplexModel.add(fObj);
     solver = IloCplex(*env);
     solver.extract(cplexModel);
 }
@@ -40,6 +41,8 @@ std::string Model::getStatus() {
 
 std::vector<std::vector<Task>> Model::getSchedule() {
     std::vector<std::vector<Task>> schedule;
+
+    std::cout << "function object result = " << solver.getValue(fObj) << std::endl;
 
     for (int core = 0; core < nFastCores + nLowPowerCores; ++core) {
         for (const Task& task : tasks) {
