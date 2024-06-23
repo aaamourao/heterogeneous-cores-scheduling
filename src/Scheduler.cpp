@@ -6,9 +6,6 @@
 #include <queue>
 #include "Scheduler.h"
 
-int Scheduler::fastCores = 0;
-int Scheduler::lowPowerCores = 0;
-
 Scheduler::Scheduler(const int aNCores, const std::vector<double>& aSlowFactor)
         : nCores(aNCores), slowFactor(aSlowFactor),
           makeSpan(std::numeric_limits<int>::max()) {
@@ -73,7 +70,7 @@ void Scheduler::execute() {
 }
 
 int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedule, const int current,
-                         std::string& tasksScheduled, const int beginning, const int end) {
+                             std::string& tasksScheduled, const int beginning, const int end) {
     if (index == end - beginning || current >= makeSpan) {
         if (current < makeSpan) {
             makeSpan = current;

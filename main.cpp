@@ -6,8 +6,8 @@
 #include "src/MetaHeuristic.h"
 #include "src/Model.h"
 
-const int numberOfTasks = 100;
-const int numberOfCores = 10;
+const int numberOfTasks = 1000;
+const int numberOfCores = 2;
 
 
 std::pair<std::vector<std::shared_ptr<Task>>, std::vector<double>> generateBenchmark() {
@@ -32,7 +32,7 @@ std::pair<std::vector<std::shared_ptr<Task>>, std::vector<double>> generateBench
 }
 
 void printResult(const std::shared_ptr<Scheduler>& scheduler) {
-    std::cout << "MakeSpan found for " << numberOfTasks << " tasks on " << numberOfCores << ": ";
+    std::cout << "MakeSpan found for " << numberOfTasks << " tasks on " << numberOfCores << " cores: ";
     std::cout << scheduler->getMakeSpan() << std::endl;
 
     const std::unordered_map<int, std::shared_ptr<Task>> scheduledTasks = scheduler->getTasks();

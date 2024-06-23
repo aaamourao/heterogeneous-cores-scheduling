@@ -22,7 +22,6 @@ void MetaHeuristic::execute(const int batchSize) {
     for (int i = 0; i < iterations; ++i) {
         scheduler->executeBatch(start, std::min(tasksSize, start + batchSize), current);
         current = scheduler->getMakeSpan();
-        std::cout << start << std::endl;
         start += batchSize;
     }
 }

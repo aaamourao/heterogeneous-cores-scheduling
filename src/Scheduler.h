@@ -43,9 +43,6 @@ private:
         makeSpan = -1;
     }
 
-    static int fastCores;
-    static int lowPowerCores;
-
     int backtrack(int index, std::vector<std::vector<Task>> &schedule, int current);
 
     int backtrack(int index, std::vector<std::vector<Task>> &schedule, int current,
