@@ -8,6 +8,7 @@
 
 #include <ilomodel.h>
 #include <vector>
+#include <ilocplex.h>
 #include "Task.h"
 
 class Model {
@@ -17,6 +18,7 @@ class Model {
     int nLowPowerCores;
     std::vector<IloNumVar> runningOnMachineVars;
     std::vector<IloNumVar> tasksDuration;
+    IloCplex solver;
 public:
     explicit Model(int aNFastCores, int aNLowPowerCores, const std::vector<Task>& aTask);
     virtual ~Model();
