@@ -4,16 +4,15 @@
 
 #include "Model.h"
 
-Model::Model(const int aNFastCores, const int aNLowPowerCores, std::vector<std::shared_ptr<Task>>& aTasks,
-             double aSlowFactor)
-: nFastCores(aNFastCores), nLowPowerCores(aNLowPowerCores), slowFactor(aSlowFactor), tasks{aTasks} {
+Model::Model(const int aNCores, std::vector<std::shared_ptr<Task>>& aTasks, const std::vector<double>& aSlowFactor)
+: nCores(aNCores), slowFactor(aSlowFactor), tasks{aTasks} {
     env = std::make_unique<IloEnv>();
     cplexModel = IloModel(*env);
 
     IloNumVar makeSpan = IloNumVar(*env, 0.0, IloInfinity, ILOFLOAT);
     cplexModel.add(makeSpan);
     for (const std::shared_ptr<Task>& task : tasks) {
-        for (int core = 0; core < nFastCores + nLowPowerCores; ++core) {
+        for (int core = 0; core < nCores; ++core) {
             runningOnMachineVars[core].insert({task->getId(), IloNumVar(*env, 0.0, 1.0, ILOBOOL)});
             cplexModel.add(runningOnMachineVars[core][task->getId()]);
         }
@@ -24,18 +23,17 @@ Model::Model(const int aNFastCores, const int aNLowPowerCores, std::vector<std::
 
     for (const std::shared_ptr<Task>& task : tasks) {
         IloExpr taskIsExecutedByOnlyOneCoreConstraintExpr(*env);
-        for (int core = 0; core < nFastCores + nLowPowerCores; ++core) {
+        for (int core = 0; core < nCores; ++core) {
             taskIsExecutedByOnlyOneCoreConstraintExpr += runningOnMachineVars[core][task->getId()];
         }
         //cplexModel.add(IloRange(*env, taskIsExecutedByOnlyOneCoreConstraintExpr == 1.0));
         cplexModel.add(taskIsExecutedByOnlyOneCoreConstraintExpr == 1.0);
     }
 
-    for (int core = 0; core < nFastCores + nLowPowerCores; ++core) {
+    for (int core = 0; core < nCores; ++core) {
         IloExpr coreMakeSpanConstraintExpr(*env);
         for (const std::shared_ptr<Task>& task : tasks) {
-            const int duration = core < nFastCores ? task->getDuration()
-                    : static_cast<int>(static_cast<double>(task->getDuration()) * slowFactor);
+            const int duration = static_cast<int>(static_cast<double>(task->getDuration()) * slowFactor[core]);
             coreMakeSpanConstraintExpr += duration * runningOnMachineVars[core][task->getId()];
         }
         // cplexModel.add(IloRange(*env, makeSpan >= coreMakeSpanConstraintExpr));
@@ -74,7 +72,7 @@ std::vector<std::vector<Task>> Model::getSchedule() {
 }
 
 void Model::importIncumbentSolution(std::vector<std::vector<Task>> &schedule) {
-    for (int core = 0; core < nFastCores + nLowPowerCores; ++core) {
+    for (int core = 0; core < nCores; ++core) {
         for (const Task& task : schedule[core]) {
             //runningOnMachineVars[core][task.getId()].set(1.0);
         }

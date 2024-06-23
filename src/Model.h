@@ -15,15 +15,14 @@
 class Model {
     std::unique_ptr<IloEnv> env;
     IloModel cplexModel;
-    int nFastCores;
-    int nLowPowerCores;
-    double slowFactor;
+    int nCores;
+    std::vector<double> slowFactor;
     std::vector<std::shared_ptr<Task>> tasks;
     std::unordered_map<int, std::unordered_map<int, IloNumVar>> runningOnMachineVars;
     IloCplex solver;
     IloObjective fObj;
 public:
-    explicit Model(int aNFastCores, int aNLowPowerCores, std::vector<std::shared_ptr<Task>>& aTask, double aSlowFactor);
+    explicit Model(int aNCores, std::vector<std::shared_ptr<Task>>& aTask, const std::vector<double>& aSlowFactor);
 
     virtual ~Model();
 

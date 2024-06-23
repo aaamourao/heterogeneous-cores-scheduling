@@ -12,21 +12,18 @@
 #include "Task.h"
 
 class Scheduler {
-    int nFastCores;
-    int nLowPowerCores;
-    double slowFactor;
+    int nCores;
+    std::vector<double> slowFactor;
     std::unordered_map<int, std::shared_ptr<Task>> tasks;
     std::vector<std::vector<Task>> bestSchedule;
 
     int makeSpan;
 public:
-    explicit Scheduler(int aNFastCores, int aNLowPowerCores, double aSlowFactor);
+    explicit Scheduler(int aNCores, const std::vector<double>& aSlowFactor);
 
     void addTask(std::shared_ptr<Task>& task);
 
-    [[maybe_unused]] int getNFastCores() const;
-
-    int getNLowPowerCores() const;
+    int getNCores() const;
 
     int getMakeSpan() const;
 
@@ -42,9 +39,7 @@ public:
 
 private:
     Scheduler() {
-        nFastCores = 0;
-        nLowPowerCores = 0;
-        slowFactor = 0;
+        nCores = 0;
         makeSpan = -1;
     }
 
@@ -81,7 +76,7 @@ private:
                   std::unordered_set<std::string>& dp);
 
     int backtrack(int index, std::vector<std::vector<Task>> &schedule, int current,
-                  std::string &tasksScheduled, std::unordered_set<std::string> &dp, int beginning, int end);
+                  std::string &tasksScheduled, int beginning, int end);
 
 };
 

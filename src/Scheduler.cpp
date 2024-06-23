@@ -9,11 +9,9 @@
 int Scheduler::fastCores = 0;
 int Scheduler::lowPowerCores = 0;
 
-Scheduler::Scheduler(const int aNFastCores, const int aNLowPowerCores, const double aSlowFactor)
-        : nFastCores(aNFastCores), nLowPowerCores(aNLowPowerCores), slowFactor(aSlowFactor),
+Scheduler::Scheduler(const int aNCores, const std::vector<double>& aSlowFactor)
+        : nCores(aNCores), slowFactor(aSlowFactor),
           makeSpan(std::numeric_limits<int>::max()) {
-    fastCores = aNFastCores;
-    lowPowerCores = aNLowPowerCores;
 }
 
 void Scheduler::addTask(std::shared_ptr<Task>& task) {
@@ -25,12 +23,8 @@ void Scheduler::reset() {
     makeSpan = std::numeric_limits<int>::max();
 }
 
-int Scheduler::getNFastCores() const {
-    return nFastCores;
-}
-
-int Scheduler::getNLowPowerCores() const {
-    return nLowPowerCores;
+int Scheduler::getNCores() const {
+    return nCores;
 }
 
 int Scheduler::getMakeSpan() const {
@@ -38,7 +32,6 @@ int Scheduler::getMakeSpan() const {
 }
 
 int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedule, const int current,
-
                          std::unordered_set<std::string>& dp) {
     if (index == tasks.size() || current >= makeSpan) {
         if (current < makeSpan) {
@@ -53,10 +46,8 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
     int minMakeSpan = std::numeric_limits<int>::max();
     double factor = 1.0;
 
-    for (int coreIndex = 0; coreIndex < nFastCores + nLowPowerCores; ++coreIndex) {
-        if (coreIndex >= nFastCores) {
-            factor = slowFactor;
-        }
+    for (int coreIndex = 0; coreIndex < nCores; ++coreIndex) {
+        factor = slowFactor[coreIndex];
 
         std::shared_ptr<Task> task = tasks[index];
         int start = 0;
@@ -83,16 +74,14 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
 }
 
 void Scheduler::execute() {
-    const int totalCpus = nFastCores + nLowPowerCores;
-    std::vector<std::vector<Task>> schedule(totalCpus, std::vector<Task>());
+    std::vector<std::vector<Task>> schedule(nCores, std::vector<Task>());
     std::string tasksScheduled(tasks.size(), 'x');
     std::unordered_set<std::string> dp;
     makeSpan = backtrack(0, schedule, 0, dp);
 }
 
 int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedule, const int current,
-                         std::string& tasksScheduled, std::unordered_set<std::string>& dp, const int beginning,
-                         const int end) {
+                         std::string& tasksScheduled, const int beginning, const int end) {
     if (index == end - beginning || current >= makeSpan) {
         if (current < makeSpan) {
             makeSpan = current;
@@ -101,16 +90,12 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
         return current;
     }
 
-    dp.insert(tasksScheduled);
-
     int minMakeSpan = std::numeric_limits<int>::max();
     double factor = 1.0;
 
-    for (int coreIndex = 0; coreIndex < nFastCores + nLowPowerCores; ++coreIndex) {
+    for (int coreIndex = 0; coreIndex < nCores; ++coreIndex) {
         const int realIndex = index + beginning;
-        if (coreIndex >= nFastCores) {
-            factor = slowFactor;
-        }
+        factor = slowFactor[coreIndex];
         if (tasksScheduled[index] == 'x') {
             std::shared_ptr<Task> task = tasks[realIndex];
             int start = 0;
@@ -121,15 +106,11 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
             schedule[coreIndex][schedule[coreIndex].size() - 1].scheduleTask(start, coreIndex, factor);
             tasksScheduled[index] = static_cast<char>(coreIndex + '0');
 
-            // We may actually be doing a DFS instead of Dynamic Programming here
-            if (dp.find(tasksScheduled) != dp.end()) {
-                continue;
-            }
             minMakeSpan = std::min(minMakeSpan, backtrack(index + 1, schedule,
                                                           std::max(current, schedule[coreIndex][
                                                                   schedule[coreIndex].size() - 1
                                                           ].getEnd()),
-                                                          tasksScheduled, dp, beginning, end));
+                                                          tasksScheduled, beginning, end));
             schedule[coreIndex].pop_back();
             tasksScheduled[index] = 'x';
         }
@@ -139,8 +120,7 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
 }
 
 void Scheduler::executeBatch(const int start, const int end, const int current) {
-    const int totalCpus = nFastCores + nLowPowerCores;
-    std::vector<std::vector<Task>> schedule(totalCpus, std::vector<Task>());
+    std::vector<std::vector<Task>> schedule(nCores, std::vector<Task>());
     if (!bestSchedule.empty()) {
         schedule = bestSchedule;
     }
@@ -148,7 +128,7 @@ void Scheduler::executeBatch(const int start, const int end, const int current) 
     std::unordered_set<std::string> dp;
     // reinitialize makeSpan or it is going to stop immediately
     makeSpan = std::numeric_limits<int>::max();
-    makeSpan = backtrack(0, schedule, current, tasksScheduled, dp, start, end);
+    makeSpan = backtrack(0, schedule, current, tasksScheduled, start, end);
 }
 
 std::unordered_map<int, std::shared_ptr<Task>> Scheduler::getTasks() const {
@@ -157,10 +137,10 @@ std::unordered_map<int, std::shared_ptr<Task>> Scheduler::getTasks() const {
 
 void Scheduler::saveSchedule() {
     if (!bestSchedule.empty()) {
-        for (int core = 0; core < nFastCores + nLowPowerCores; ++core) {
+        for (int core = 0; core < nCores; ++core) {
             std::vector<Task>& coreSchedule = bestSchedule[core];
             for (Task& task : coreSchedule) {
-                tasks[task.getId()]->scheduleTask(task.getStart(), core, core < nFastCores ? 1.0 : slowFactor);
+                tasks[task.getId()]->scheduleTask(task.getStart(), core, slowFactor[core]);
             }
         }
     }
