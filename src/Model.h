@@ -8,6 +8,7 @@
 
 #include <ilomodel.h>
 #include <vector>
+#include <unordered_map>
 #include <ilocplex.h>
 #include "Task.h"
 
@@ -16,12 +17,17 @@ class Model {
     IloModel cplexModel;
     int nFastCores;
     int nLowPowerCores;
-    std::vector<IloNumVar> runningOnMachineVars;
-    std::vector<IloNumVar> tasksDuration;
+    std::unordered_map<int, std::unordered_map<int, IloNumVar>> runningOnMachineVars;
+    std::unordered_map<int, std::unordered_map<int, IloNumVar>> tasksDuration;
     IloCplex solver;
 public:
     explicit Model(int aNFastCores, int aNLowPowerCores, const std::vector<Task>& aTask);
+
     virtual ~Model();
+
+    int solve();
+
+
 };
 
 

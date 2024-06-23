@@ -8,15 +8,13 @@ Model::Model(const int aNFastCores, const int aNLowPowerCores, const std::vector
 : nFastCores(aNFastCores), nLowPowerCores(aNLowPowerCores) {
     cplexModel = IloModel(env);
     IloExpr c;
-    for (const IloNumVar& x : runningOnMachineVars) {
-        for (const IloNumVar& d : tasksDuration) {
-            // TODO: Should use emplace here, should fix this later
-            runningOnMachineVars.push_back(IloNumVar(env, 0.0, 1.0, ILOBOOL));
-            cplexModel.add(runningOnMachineVars[runningOnMachineVars.size() - 1]);
-            // TODO: Should use emplace here, should fix this later
-            tasksDuration.push_back(IloNumVar(env, 10.0, 100.0, ILOFLOAT));
-            cplexModel.add(tasksDuration[tasksDuration.size() - 1]);
-            c += x * d;
+    for (int core = 0; core < nFastCores + nLowPowerCores; ++core) {
+        for (const Task& task : aTasks) {
+            runningOnMachineVars[core].insert({task.getId(), IloNumVar(env, 0.0, 1.0, ILOBOOL)});
+            cplexModel.add(runningOnMachineVars[core][task.getId()]);
+            tasksDuration[core].insert({task.getId(), IloNumVar(env, 10.0, 100.0, ILOFLOAT)});
+            cplexModel.add(tasksDuration[core][task.getId()]);
+            c += runningOnMachineVars[core][task.getId()] * tasksDuration[core][task.getId()];
         }
     }
     cplexModel.add(IloMinimize(env, c));
@@ -25,4 +23,8 @@ Model::Model(const int aNFastCores, const int aNLowPowerCores, const std::vector
 
 Model::~Model() {
     env.end();
+}
+
+int Model::solve() {
+    return solver.solve() == IloTrue ? 1 : 0;
 }

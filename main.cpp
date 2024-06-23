@@ -15,7 +15,7 @@ std::vector<Task> generateBenchmark() {
 
     std::random_device random;
     std::mt19937 generator(random());
-    std::uniform_int_distribution<> distribution(1, 10000);
+    std::uniform_int_distribution<> distribution(10, 100);
     for (int i = 0; i < numberOfTasks; ++i) {
         const int duration = distribution(generator);
         std::cout << "task " << i << " duration: " << duration << std::endl;
