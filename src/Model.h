@@ -13,21 +13,25 @@
 #include "Task.h"
 
 class Model {
-    IloEnv env;
+    std::unique_ptr<IloEnv> env;
     IloModel cplexModel;
     int nFastCores;
     int nLowPowerCores;
+    double slowFactor;
+    // TODO: optimzie it by saving shared_ptr
+    std::vector<Task> tasks;
     std::unordered_map<int, std::unordered_map<int, IloNumVar>> runningOnMachineVars;
-    std::unordered_map<int, std::unordered_map<int, IloNumVar>> tasksDuration;
     IloCplex solver;
 public:
-    explicit Model(int aNFastCores, int aNLowPowerCores, const std::vector<Task>& aTask);
+    explicit Model(int aNFastCores, int aNLowPowerCores, const std::vector<Task>& aTask, double aSlowFactor);
 
     virtual ~Model();
 
-    int solve();
+    bool solve();
 
+    std::vector<std::vector<Task>> getSchedule();
 
+    std::string getStatus();
 };
 
 

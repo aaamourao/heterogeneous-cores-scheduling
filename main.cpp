@@ -4,10 +4,11 @@
 #include "src/Task.h"
 #include "src/Scheduler.h"
 #include "src/MetaHeuristic.h"
+#include "src/Model.h"
 
-const int numberOfTasks = 60;
-const int numberOfFastCores = 2;
-const int numberOfLowPowerCores = 2;
+const int numberOfTasks = 20;
+const int numberOfFastCores = 4;
+const int numberOfLowPowerCores = 4;
 const double slowFactor = 1.8;
 
 std::vector<Task> generateBenchmark() {
@@ -41,18 +42,18 @@ void printResult(const std::shared_ptr<Scheduler>& scheduler) {
 }
 
 int main() {
+    // TODO: optimize it by shaving shared ptr... tasks is being copied everywhere
     std::vector<Task> tasks = generateBenchmark();
     std::shared_ptr<Scheduler> scheduler = std::make_shared<Scheduler>(numberOfFastCores,
-                                                                       numberOfLowPowerCores,
-                                                                       slowFactor);
+                                                                       numberOfLowPowerCores,slowFactor);
     for (Task& task : tasks) {
         scheduler->addTask(task);
     }
 
     // Optimal
-    scheduler->execute();
-    scheduler->saveSchedule();
-    printResult(scheduler);
+    //scheduler->execute();
+    //scheduler->saveSchedule();
+    //printResult(scheduler);
 
     //scheduler->reset();
 
@@ -61,6 +62,10 @@ int main() {
     //meta.saveSchedule();
 
     //printResult(meta.getScheduler());
+    Model model(numberOfFastCores, numberOfLowPowerCores, tasks, slowFactor);
+    model.solve();
+    std::cout << "solved model " << model.getStatus() << std::endl;
+    model.getSchedule();
 
     return 0;
 }
