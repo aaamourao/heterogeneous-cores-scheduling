@@ -6,7 +6,7 @@
 #include "src/MetaHeuristic.h"
 #include "src/Model.h"
 
-const int numberOfTasks = 20;
+const int numberOfTasks = 100000;
 const int numberOfFastCores = 1;
 const int numberOfLowPowerCores = 1;
 const double slowFactor = 1.8;
@@ -32,13 +32,13 @@ void printResult(const std::shared_ptr<Scheduler>& scheduler) {
     std::cout << scheduler->getMakeSpan() << std::endl;
 
     const std::unordered_map<int, std::shared_ptr<Task>> scheduledTasks = scheduler->getTasks();
-
+/*
     for (const auto & kv : scheduledTasks) {
         std::shared_ptr<Task> scheduledTask = kv.second;
         std::cout << "task " << scheduledTask->getId() << " scheduled to core " << scheduledTask->getAssignedCoreIndex();
         std::cout << ", starting at " << scheduledTask->getStart() << " and finishing at ";
         std::cout << scheduledTask->getEnd() << std::endl;
-    }
+    }*/
 }
 
 int main() {
@@ -56,11 +56,12 @@ int main() {
 
     //scheduler->reset();
 
-    //MetaHeuristic meta = MetaHeuristic(scheduler);
-    //meta.execute(5);
-    //meta.saveSchedule();
+    MetaHeuristic meta = MetaHeuristic(scheduler);
+    meta.execute(10);
+    meta.saveSchedule();
 
-    //printResult(meta.getScheduler());
+    printResult(meta.getScheduler());
+
     Model model(numberOfFastCores, numberOfLowPowerCores, tasks, slowFactor);
     model.solve();
     std::cout << "solved model " << model.getStatus() << std::endl;

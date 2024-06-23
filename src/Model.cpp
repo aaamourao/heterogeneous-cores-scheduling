@@ -10,7 +10,7 @@ Model::Model(const int aNFastCores, const int aNLowPowerCores, std::vector<std::
     env = std::make_unique<IloEnv>();
     cplexModel = IloModel(*env);
 
-    IloNumVar makeSpan = IloNumVar(*env, 0.0, 1000000.0, ILOFLOAT);
+    IloNumVar makeSpan = IloNumVar(*env, 0.0, IloInfinity, ILOFLOAT);
     cplexModel.add(makeSpan);
     for (const std::shared_ptr<Task>& task : tasks) {
         for (int core = 0; core < nFastCores + nLowPowerCores; ++core) {
@@ -62,11 +62,21 @@ std::vector<std::vector<Task>> Model::getSchedule() {
     std::vector<std::vector<Task>> schedule;
 
     std::cout << "function object result = " << solver.getValue(fObj) << std::endl;
-
+/*
     for (int core = 0; core < nFastCores + nLowPowerCores; ++core) {
         for (const std::shared_ptr<Task>& task : tasks) {
-            std::cout << "task " << task->getId() << " running on core " << core << ": " << solver.getValue(runningOnMachineVars[core][task->getId()]) << std::endl;
+            if (solver.getValue(runningOnMachineVars[core][task->getId()]) == 1.0) {
+                std::cout << "task " << task->getId() << " running on core " << core << std::endl;
+            }
+        }
+    }*/
+    return schedule;
+}
+
+void Model::importIncumbentSolution(std::vector<std::vector<Task>> &schedule) {
+    for (int core = 0; core < nFastCores + nLowPowerCores; ++core) {
+        for (const Task& task : schedule[core]) {
+            //runningOnMachineVars[core][task.getId()].set(1.0);
         }
     }
-    return schedule;
 }

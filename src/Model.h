@@ -32,6 +32,8 @@ public:
     std::vector<std::vector<Task>> getSchedule();
 
     std::string getStatus();
+
+    void importIncumbentSolution(std::vector<std::vector<Task>>& schedule);
 };
 
 
