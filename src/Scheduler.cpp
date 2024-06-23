@@ -31,8 +31,7 @@ int Scheduler::getMakeSpan() const {
     return makeSpan;
 }
 
-int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedule, const int current,
-                         std::unordered_set<std::string>& dp) {
+int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedule, const int current) {
     if (index == tasks.size() || current >= makeSpan) {
         if (current < makeSpan) {
             makeSpan = current;
@@ -40,8 +39,6 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
         }
         return current;
     }
-    SchedulerHasher hasher;
-    dp.insert(hasher(schedule));
 
     int minMakeSpan = std::numeric_limits<int>::max();
     double factor = 1.0;
@@ -57,15 +54,10 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
         schedule[coreIndex].push_back(*task);
         schedule[coreIndex][schedule[coreIndex].size() - 1].scheduleTask(start, coreIndex, factor);
 
-        // We may actually be doing a DFS instead of Dynamic Programming here
-        if (dp.find(hasher(schedule)) != dp.end()) {
-            schedule[coreIndex].pop_back();
-            continue;
-        }
         minMakeSpan = std::min(minMakeSpan, backtrack(index + 1, schedule,
                                                       std::max(current, schedule[coreIndex][
                                                               schedule[coreIndex].size() - 1
-                                                              ].getEnd()), dp));
+                                                              ].getEnd())));
         schedule[coreIndex].pop_back();
 
     }
@@ -77,7 +69,7 @@ void Scheduler::execute() {
     std::vector<std::vector<Task>> schedule(nCores, std::vector<Task>());
     std::string tasksScheduled(tasks.size(), 'x');
     std::unordered_set<std::string> dp;
-    makeSpan = backtrack(0, schedule, 0, dp);
+    makeSpan = backtrack(0, schedule, 0);
 }
 
 int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedule, const int current,

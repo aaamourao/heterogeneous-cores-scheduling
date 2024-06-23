@@ -46,34 +46,7 @@ private:
     static int fastCores;
     static int lowPowerCores;
 
-    struct SchedulerHasher {
-        std::string operator()(const std::vector<std::vector<Task>>& schedule) const {
-
-            std::vector<int> fastCoresSchedule;
-            for (int i = 0; i < fastCores; ++i) {
-                const int end = schedule[i].empty() ? 0 : schedule[i][schedule[i].size() - 1].getEnd();
-                fastCoresSchedule.push_back(end);
-            }
-            std::vector<int> lowPowerCoresSchedule;
-            for (int i = fastCores; i < fastCores + lowPowerCores; ++i) {
-                const int end = schedule[i].empty() ? 0 : schedule[i][schedule[i].size() - 1].getEnd();
-                lowPowerCoresSchedule.push_back(end);
-            }
-            std::sort(fastCoresSchedule.begin(), fastCoresSchedule.end());
-            std::sort(lowPowerCoresSchedule.begin(), lowPowerCoresSchedule.end());
-            std::string hashable;
-            for (int end : fastCoresSchedule) {
-                hashable += std::to_string(end) + "#";
-            }
-            for (int end : lowPowerCoresSchedule) {
-                hashable += std::to_string(end) + "#";
-            }
-            return hashable;
-        }
-    };
-
-    int backtrack(int index, std::vector<std::vector<Task>> &schedule, int current,
-                  std::unordered_set<std::string>& dp);
+    int backtrack(int index, std::vector<std::vector<Task>> &schedule, int current);
 
     int backtrack(int index, std::vector<std::vector<Task>> &schedule, int current,
                   std::string &tasksScheduled, int beginning, int end);

@@ -32,7 +32,7 @@ public:
 
     std::string getStatus();
 
-    void importIncumbentSolution(std::vector<std::vector<Task>>& schedule);
+    void importIncumbentSolution(const std::unordered_map<int, std::shared_ptr<Task>>& tasks);
 };
 
 

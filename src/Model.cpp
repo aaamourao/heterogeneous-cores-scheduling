@@ -26,7 +26,6 @@ Model::Model(const int aNCores, std::vector<std::shared_ptr<Task>>& aTasks, cons
         for (int core = 0; core < nCores; ++core) {
             taskIsExecutedByOnlyOneCoreConstraintExpr += runningOnMachineVars[core][task->getId()];
         }
-        //cplexModel.add(IloRange(*env, taskIsExecutedByOnlyOneCoreConstraintExpr == 1.0));
         cplexModel.add(taskIsExecutedByOnlyOneCoreConstraintExpr == 1.0);
     }
 
@@ -36,7 +35,6 @@ Model::Model(const int aNCores, std::vector<std::shared_ptr<Task>>& aTasks, cons
             const int duration = static_cast<int>(static_cast<double>(task->getDuration()) * slowFactor[core]);
             coreMakeSpanConstraintExpr += duration * runningOnMachineVars[core][task->getId()];
         }
-        // cplexModel.add(IloRange(*env, makeSpan >= coreMakeSpanConstraintExpr));
         cplexModel.add(makeSpan >= coreMakeSpanConstraintExpr);
     }
 
@@ -71,10 +69,22 @@ std::vector<std::vector<Task>> Model::getSchedule() {
     return schedule;
 }
 
-void Model::importIncumbentSolution(std::vector<std::vector<Task>> &schedule) {
-    for (int core = 0; core < nCores; ++core) {
-        for (const Task& task : schedule[core]) {
-            //runningOnMachineVars[core][task.getId()].set(1.0);
+void Model::importIncumbentSolution(const std::unordered_map<int, std::shared_ptr<Task>>& taskSchedule) {
+    IloNumVarArray startVar(*env);
+    IloNumArray startVal(*env);
+    for (const auto& kv : taskSchedule) {
+        const std::shared_ptr<Task> task = kv.second;
+        const int core = task->getAssignedCoreIndex();
+        startVar.add(runningOnMachineVars[core][task->getId()]);
+        startVal.add(1.0);
+        for (int otherCore = 0; otherCore < nCores; ++otherCore) {
+            if (otherCore != core) {
+                startVar.add(runningOnMachineVars[otherCore][task->getId()]);
+                startVal.add(0.0);
+            }
         }
     }
+    solver.addMIPStart(startVar, startVal);
+    startVal.end();
+    startVar.end();
 }

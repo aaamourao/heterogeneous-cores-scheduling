@@ -6,7 +6,7 @@
 #include "src/MetaHeuristic.h"
 #include "src/Model.h"
 
-const int numberOfTasks = 20;
+const int numberOfTasks = 100;
 const int numberOfCores = 10;
 
 
@@ -68,6 +68,7 @@ int main() {
     printResult(meta.getScheduler());
 
     Model model(numberOfCores, tasks, slowFactor);
+    model.importIncumbentSolution(scheduler->getTasks());
     model.solve();
     std::cout << "solved model " << model.getStatus() << std::endl;
     model.getSchedule();
