@@ -38,6 +38,7 @@ int Scheduler::getMakeSpan() const {
 }
 
 int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedule, const int current,
+
                          std::unordered_set<std::string>& dp) {
     if (index == tasks.size() || current >= makeSpan) {
         if (current < makeSpan) {
