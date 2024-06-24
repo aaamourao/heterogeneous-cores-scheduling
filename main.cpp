@@ -66,7 +66,7 @@ int main() {
     meta.execute(10);
     meta.saveSchedule();
 
-    printResult(meta.getScheduler());
+
 
     std::shared_ptr<Model> model = std::make_shared<Model>(numberOfCores, tasks, slowFactor);
     model->importIncumbentSolution(scheduler->getTasks());
@@ -74,8 +74,11 @@ int main() {
     // std::cout << "solved model " << model->getStatus() << std::endl;
     // model->getSchedule();
 
-    FixAndOptimize fixAndOptimize(model, 10);
+    FixAndOptimize fixAndOptimize(model, 30);
     fixAndOptimize.execute(scheduler->getTasks());
+
+    printResult(meta.getScheduler());
+    std::cout << "result found by FixAndOptimize: " << fixAndOptimize.getMakeSpan() << std::endl;
 
     return 0;
 }

@@ -5,7 +5,7 @@
 #include "FixAndOptimize.h"
 
 FixAndOptimize::FixAndOptimize(const std::shared_ptr<Model>& aModel, const int aWindowSize)
-: windowSize(aWindowSize), model(aModel) {
+: windowSize(aWindowSize), model(aModel), makeSpan(std::numeric_limits<double>::max()) {
 
 }
 
@@ -18,7 +18,7 @@ double FixAndOptimize::execute(const std::unordered_map<int, std::shared_ptr<Tas
 
     const int varsSize = static_cast<int>(model->tasks.size());
     int iterations = varsSize / windowSize;
-    double makeSpan = std::numeric_limits<double>::max();
+
     if (varsSize % windowSize != 0) {
         ++iterations;
     }
@@ -26,12 +26,13 @@ double FixAndOptimize::execute(const std::unordered_map<int, std::shared_ptr<Tas
     for (int i = 0; i < iterations; ++i) {
         fix(start, std::min(varsSize, start + windowSize), assignedCores);
         optimize(assignedCores);
-        makeSpan = std::min(makeSpan, model->getMakeSpan());
-        removeFixed();
+        if (i != iterations - 1) {
+            removeFixed();
+        }
 
         start += windowSize;
     }
-    return makeSpan;
+    return model->getMakeSpan();
 }
 
 void FixAndOptimize::fix(const int start, const int end, std::unordered_map<int, int>& assignedCores) {
@@ -67,4 +68,8 @@ void FixAndOptimize::removeFixed() {
         model->cplexModel.remove(constraint);
     }
     fixedVarConstraints.clear();
+}
+
+double FixAndOptimize::getMakeSpan() const {
+    return model->getMakeSpan();
 }

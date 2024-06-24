@@ -12,10 +12,13 @@ class FixAndOptimize {
     std::shared_ptr<Model> model;
     int windowSize;
     std::vector<IloRange> fixedVarConstraints;
+    double makeSpan;
 public:
     explicit FixAndOptimize(const std::shared_ptr<Model>& aModel, int aWindowSize = 10);
 
     double execute(const std::unordered_map<int, std::shared_ptr<Task>>& taskSchedule);
+
+    double getMakeSpan() const;
 
 private:
     FixAndOptimize() {

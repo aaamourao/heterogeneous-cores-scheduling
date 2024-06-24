@@ -62,14 +62,14 @@ std::vector<std::vector<Task>> Model::getSchedule() {
     std::vector<std::vector<Task>> schedule;
 
     std::cout << "function object result = " << solver.getValue(fObj) << std::endl;
-/*
-    for (int core = 0; core < nFastCores + nLowPowerCores; ++core) {
+
+    for (int core = 0; core < nCores; ++core) {
         for (const std::shared_ptr<Task>& task : tasks) {
             if (solver.getValue(runningOnMachineVars[core][task->getId()]) == 1.0) {
                 std::cout << "task " << task->getId() << " running on core " << core << std::endl;
             }
         }
-    }*/
+    }
     return schedule;
 }
 
