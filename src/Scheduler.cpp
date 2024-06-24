@@ -134,3 +134,17 @@ void Scheduler::saveSchedule() {
         }
     }
 }
+
+void Scheduler::printResult() {
+    std::cout << "Heuristic found makeSpan found for " << tasks.size() << " tasks on " << nCores << " cores: ";
+    std::cout << getMakeSpan() << std::endl;
+
+    const std::unordered_map<int, std::shared_ptr<Task>> scheduledTasks = getTasks();
+
+    for (const auto & kv : scheduledTasks) {
+        std::shared_ptr<Task> scheduledTask = kv.second;
+        std::cout << "task " << scheduledTask->getId() << " scheduled to core " << scheduledTask->getAssignedCoreIndex();
+        std::cout << ", starting at " << scheduledTask->getStart() << " and finishing at ";
+        std::cout << scheduledTask->getEnd() << std::endl;
+    }
+}

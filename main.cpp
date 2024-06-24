@@ -8,7 +8,7 @@
 #include "src/FixAndOptimize.h"
 
 const int numberOfTasks = 100;
-const int numberOfCores = 2;
+const int numberOfCores = 10;
 
 
 std::pair<std::vector<std::shared_ptr<Task>>, std::vector<double>> generateBenchmark() {
@@ -30,20 +30,6 @@ std::pair<std::vector<std::shared_ptr<Task>>, std::vector<double>> generateBench
         std::cout << "Core " << core << " speed is " << slowFactor << std::endl;
     }
     return {tasks, factor};
-}
-
-void printResult(const std::shared_ptr<Scheduler>& scheduler) {
-    std::cout << "MakeSpan found for " << numberOfTasks << " tasks on " << numberOfCores << " cores: ";
-    std::cout << scheduler->getMakeSpan() << std::endl;
-
-    const std::unordered_map<int, std::shared_ptr<Task>> scheduledTasks = scheduler->getTasks();
-/*
-    for (const auto & kv : scheduledTasks) {
-        std::shared_ptr<Task> scheduledTask = kv.second;
-        std::cout << "task " << scheduledTask->getId() << " scheduled to core " << scheduledTask->getAssignedCoreIndex();
-        std::cout << ", starting at " << scheduledTask->getStart() << " and finishing at ";
-        std::cout << scheduledTask->getEnd() << std::endl;
-    }*/
 }
 
 int main() {
@@ -74,10 +60,10 @@ int main() {
     // std::cout << "solved model " << model->getStatus() << std::endl;
     // model->getSchedule();
 
-    FixAndOptimize fixAndOptimize(model, 30);
+    FixAndOptimize fixAndOptimize(model, 10);
     fixAndOptimize.execute(scheduler->getTasks());
 
-    printResult(meta.getScheduler());
+    std::cout << "result found my heuristic: " << scheduler->getMakeSpan() << std::endl;
     std::cout << "result found by FixAndOptimize: " << fixAndOptimize.getMakeSpan() << std::endl;
 
     return 0;

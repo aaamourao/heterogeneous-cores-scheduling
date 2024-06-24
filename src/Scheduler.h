@@ -37,6 +37,8 @@ public:
 
     void reset();
 
+    void printResult();
+
 private:
     Scheduler() {
         nCores = 0;
