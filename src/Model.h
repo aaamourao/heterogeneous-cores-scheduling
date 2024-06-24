@@ -34,10 +34,16 @@ public:
 
     void importIncumbentSolution(const std::unordered_map<int, std::shared_ptr<Task>>& tasks);
 
+    std::unordered_map<int, std::unordered_map<int, IloNumVar>> getRunningOnMachineVars() const;
+
+    double getMakeSpan() const;
+
 private:
     Model() {
         nCores = 0;
     }
+
+    friend class FixAndOptimize;
 };
 
 

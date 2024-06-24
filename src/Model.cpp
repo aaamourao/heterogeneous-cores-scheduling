@@ -54,6 +54,10 @@ std::string Model::getStatus() {
     return std::to_string(solver.getStatus());
 }
 
+double Model::getMakeSpan() const {
+    return solver.getValue(fObj);
+}
+
 std::vector<std::vector<Task>> Model::getSchedule() {
     std::vector<std::vector<Task>> schedule;
 
@@ -87,4 +91,8 @@ void Model::importIncumbentSolution(const std::unordered_map<int, std::shared_pt
     solver.addMIPStart(startVar, startVal);
     startVal.end();
     startVar.end();
+}
+
+std::unordered_map<int, std::unordered_map<int, IloNumVar>> Model::getRunningOnMachineVars() const {
+    return runningOnMachineVars;
 }

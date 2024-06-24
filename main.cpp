@@ -5,8 +5,9 @@
 #include "src/Scheduler.h"
 #include "src/MetaHeuristic.h"
 #include "src/Model.h"
+#include "src/FixAndOptimize.h"
 
-const int numberOfTasks = 1000;
+const int numberOfTasks = 20;
 const int numberOfCores = 2;
 
 
@@ -67,11 +68,14 @@ int main() {
 
     printResult(meta.getScheduler());
 
-    Model model(numberOfCores, tasks, slowFactor);
-    model.importIncumbentSolution(scheduler->getTasks());
-    model.solve();
-    std::cout << "solved model " << model.getStatus() << std::endl;
-    model.getSchedule();
+    std::shared_ptr<Model> model = std::make_shared<Model>(numberOfCores, tasks, slowFactor);
+    model->importIncumbentSolution(scheduler->getTasks());
+    // model->solve();
+    // std::cout << "solved model " << model->getStatus() << std::endl;
+    // model->getSchedule();
+
+    FixAndOptimize fixAndOptimize(model, 5);
+    fixAndOptimize.execute(scheduler->getTasks());
 
     return 0;
 }
