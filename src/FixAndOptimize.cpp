@@ -26,6 +26,7 @@ double FixAndOptimize::execute(const std::unordered_map<int, std::shared_ptr<Tas
     for (int i = 0; i < iterations; ++i) {
         fix(start, std::min(varsSize, start + windowSize), assignedCores);
         optimize(assignedCores);
+        makeSpanHistory.push_back(model->getMakeSpan());
         if (i != iterations - 1) {
             removeFixed();
         }
@@ -72,4 +73,8 @@ void FixAndOptimize::removeFixed() {
 
 double FixAndOptimize::getMakeSpan() const {
     return model->getMakeSpan();
+}
+
+std::vector<double> FixAndOptimize::getMakeSpanHistory() const {
+    return makeSpanHistory;
 }

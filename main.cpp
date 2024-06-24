@@ -7,7 +7,7 @@
 #include "src/Model.h"
 #include "src/FixAndOptimize.h"
 
-const int numberOfTasks = 100;
+const int numberOfTasks = 1000;
 const int numberOfCores = 10;
 
 
@@ -48,8 +48,13 @@ int main() {
 
     //scheduler->reset();
 
+
     MetaHeuristic meta = MetaHeuristic(scheduler);
-    meta.execute(10);
+    const auto metaHeuristicStart = std::chrono::high_resolution_clock::now();
+    meta.execute(5);
+    const auto metaHeuristicStop = std::chrono::high_resolution_clock::now();
+    const auto metaHeuristicDuration =
+            std::chrono::duration_cast<std::chrono::milliseconds>(metaHeuristicStop - metaHeuristicStart);
     meta.saveSchedule();
 
 
@@ -61,10 +66,17 @@ int main() {
     // model->getSchedule();
 
     FixAndOptimize fixAndOptimize(model, 10);
+    const auto fixAndOptimizeStart = std::chrono::high_resolution_clock::now();
     fixAndOptimize.execute(scheduler->getTasks());
+    const auto fixAndOptimizeStop = std::chrono::high_resolution_clock::now();
+    const auto fixAndOptimizeDuration =
+            std::chrono::duration_cast<std::chrono::milliseconds>(fixAndOptimizeStop - fixAndOptimizeStart);
+    std::cout << "MakeSpan found my heuristic in " << metaHeuristicDuration.count() << ": " << scheduler->getMakeSpan() << std::endl;
+    std::cout << "MakeSpan found by FixAndOptimize in " << fixAndOptimizeDuration.count() << " : " << fixAndOptimize.getMakeSpan() << std::endl;
 
-    std::cout << "result found my heuristic: " << scheduler->getMakeSpan() << std::endl;
-    std::cout << "result found by FixAndOptimize: " << fixAndOptimize.getMakeSpan() << std::endl;
+    for (const double m : fixAndOptimize.getMakeSpanHistory()) {
+        std::cout << m << std::endl;
+    }
 
     return 0;
 }
