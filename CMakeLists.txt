@@ -11,7 +11,9 @@ add_executable(networkFlowsTF main.cpp
         src/MetaHeuristic.cpp
         src/MetaHeuristic.h
         src/Model.cpp
-        src/Model.h)
+        src/Model.h
+        src/FixAndOptimize.cpp
+        src/FixAndOptimize.h)
 
 include_directories(/Applications/CPLEX_Studio2211/cplex/include/)
 include_directories(/Applications/CPLEX_Studio2211/cplex/include/ilcplex)

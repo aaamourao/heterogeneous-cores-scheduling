@@ -33,6 +33,11 @@ public:
     std::string getStatus();
 
     void importIncumbentSolution(const std::unordered_map<int, std::shared_ptr<Task>>& tasks);
+
+private:
+    Model() {
+        nCores = 0;
+    }
 };
 
 
