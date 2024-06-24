@@ -5,7 +5,7 @@
 #include "FixAndOptimize.h"
 
 FixAndOptimize::FixAndOptimize(const std::shared_ptr<Model>& aModel, const int aWindowSize)
-: windowSize(aWindowSize), model(aModel), makeSpan(std::numeric_limits<double>::max()) {
+: windowSize(aWindowSize), model(aModel) {
 
 }
 

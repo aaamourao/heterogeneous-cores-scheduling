@@ -12,7 +12,6 @@ class FixAndOptimize {
     std::shared_ptr<Model> model;
     int windowSize;
     std::vector<IloRange> fixedVarConstraints;
-    double makeSpan;
 public:
     explicit FixAndOptimize(const std::shared_ptr<Model>& aModel, int aWindowSize = 10);
 
