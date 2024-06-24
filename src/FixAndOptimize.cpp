@@ -10,31 +10,37 @@ FixAndOptimize::FixAndOptimize(const std::shared_ptr<Model>& aModel, const int a
 }
 
 double FixAndOptimize::execute(const std::unordered_map<int, std::shared_ptr<Task>>& taskSchedule) {
+    std::unordered_map<int, int> assignedCores;
+
+    for (const auto& kv : taskSchedule) {
+        assignedCores[kv.first] = kv.second->getAssignedCoreIndex();
+    }
+
     const int varsSize = static_cast<int>(model->tasks.size());
     int iterations = varsSize / windowSize;
+    double makeSpan = std::numeric_limits<double>::max();
     if (varsSize % windowSize != 0) {
         ++iterations;
     }
     int start = 0;
-    double current = 0;
     for (int i = 0; i < iterations; ++i) {
-        fix(start, std::min(varsSize, start + windowSize), taskSchedule);
-        optimize();
+        fix(start, std::min(varsSize, start + windowSize), assignedCores);
+        optimize(assignedCores);
+        makeSpan = std::min(makeSpan, model->getMakeSpan());
         removeFixed();
-        current = model->getMakeSpan();
+
         start += windowSize;
     }
-
-    return current;
+    return makeSpan;
 }
 
-void FixAndOptimize::fix(const int start, const int end,
-                         const std::unordered_map<int, std::shared_ptr<Task>>& taskSchedule) {
+void FixAndOptimize::fix(const int start, const int end, std::unordered_map<int, int>& assignedCores) {
     for (int core = 0; core < model->nCores; ++core) {
         int taskNum = 0;
         for (const std::shared_ptr<Task>& task : model->tasks) {
             if (taskNum < start || taskNum > end) {
-                double value = taskSchedule.at(task->getId())->getAssignedCoreIndex() == core ? 1.0 : 0.0;
+                const double value = assignedCores[task->getId()] == core ? 1.0 : 0.0;
+
                 // TODO: should use emplace here, instead of push_back
                 fixedVarConstraints.push_back(
                         IloRange(*(model->env), value, model->runningOnMachineVars[core][task->getId()], value));
@@ -45,8 +51,15 @@ void FixAndOptimize::fix(const int start, const int end,
     }
 }
 
-void FixAndOptimize::optimize() {
+void FixAndOptimize::optimize(std::unordered_map<int, int>& assignedCores) {
     model->solve();
+    for (int core = 0; core < model->nCores; ++core) {
+        for (const std::shared_ptr<Task> &task: model->tasks) {
+            if (model->solver.getValue(model->runningOnMachineVars[core][task->getId()]) == 1.0) {
+                assignedCores[task->getId()] = core;
+            }
+        }
+    }
 }
 
 void FixAndOptimize::removeFixed() {

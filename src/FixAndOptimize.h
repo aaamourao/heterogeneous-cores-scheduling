@@ -23,9 +23,9 @@ private:
         model = nullptr;
     };
 
-    void fix(int start, int end, const std::unordered_map<int, std::shared_ptr<Task>>& taskSchedule);
+    void fix(int start, int end, std::unordered_map<int, int>& assignedCores);
 
-    void optimize();
+    void optimize(std::unordered_map<int, int>& assignedCores);
 
     void removeFixed();
 };

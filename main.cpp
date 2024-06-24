@@ -7,7 +7,7 @@
 #include "src/Model.h"
 #include "src/FixAndOptimize.h"
 
-const int numberOfTasks = 20;
+const int numberOfTasks = 100;
 const int numberOfCores = 2;
 
 
@@ -74,7 +74,7 @@ int main() {
     // std::cout << "solved model " << model->getStatus() << std::endl;
     // model->getSchedule();
 
-    FixAndOptimize fixAndOptimize(model, 5);
+    FixAndOptimize fixAndOptimize(model, 10);
     fixAndOptimize.execute(scheduler->getTasks());
 
     return 0;
