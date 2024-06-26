@@ -47,8 +47,7 @@ private:
 
     int backtrack(int index, std::vector<std::vector<Task>> &schedule, int current);
 
-    int backtrack(int index, std::vector<std::vector<Task>> &schedule, int current,
-                  std::string &tasksScheduled, int beginning, int end);
+    int backtrack(int index, std::vector<std::vector<Task>> &schedule, int current, int beginning, int end);
 
 };
 

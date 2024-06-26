@@ -7,7 +7,7 @@
 #include "src/Model.h"
 #include "src/FixAndOptimize.h"
 
-const int numberOfTasks = 1000;
+const int numberOfTasks = 100;
 const int numberOfCores = 10;
 
 
