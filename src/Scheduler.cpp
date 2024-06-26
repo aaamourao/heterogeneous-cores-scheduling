@@ -80,10 +80,9 @@ int Scheduler::backtrack(const int index, std::vector<std::vector<Task>>& schedu
     }
 
     int minMakeSpan = std::numeric_limits<int>::max();
-    double factor = 1.0;
     const int realIndex = index + beginning;
     for (int coreIndex = 0; coreIndex < nCores; ++coreIndex) {
-        factor = slowFactor[coreIndex];
+        const double factor = slowFactor[coreIndex];
         std::shared_ptr<Task> task = tasks[realIndex];
         int start = 0;
         if (!schedule[coreIndex].empty()) {
